@@ -190,6 +190,8 @@ export default function ReportButton({ label = "Сообщить о пробле
       const res = await createReport(fd);
       setCreatedId(res.data.id);
       setStep("success");
+      // Redirect to /success so Google Ads conversion tracking fires on that URL
+      setTimeout(() => { window.location.href = `/success?id=${res.data.id}`; }, 800);
     } catch {
       setSubmitError("Не удалось отправить. Попробуйте ещё раз.");
     } finally {
