@@ -34,71 +34,80 @@ export default function MapPage() {
       <header
         style={{
           flexShrink: 0,
-          padding: "10px 24px",
+          padding: "8px 12px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 16,
+          gap: 8,
           background: "rgba(14,18,29,0.95)",
           backdropFilter: "blur(20px)",
           borderBottom: "1px solid rgba(55,114,255,0.1)",
           boxShadow: "0 4px 32px rgba(0,0,0,0.4)",
           zIndex: 50,
+          minWidth: 0,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        {/* Left: back + logo */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
           <Link
             href="/"
             style={{
+              flexShrink: 0,
               display: "flex",
               alignItems: "center",
-              gap: 6,
-              fontSize: 13,
+              gap: 4,
+              fontSize: 12,
               color: "#bcc0ca",
               textDecoration: "none",
             }}
           >
-            <ArrowLeft size={15} />
-            На главную
+            <ArrowLeft size={14} />
+            <span className="hidden sm:inline">На главную</span>
           </Link>
-          <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.1)" }} />
-          <Link href="/">
+          <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.1)", flexShrink: 0 }} />
+          <Link href="/" style={{ flexShrink: 0 }}>
             <Image
               src="/images/logo.png"
               alt="CityVoice"
               width={120}
               height={36}
-              style={{ width: "auto", height: 30 }}
+              style={{ width: "auto", height: 26 }}
             />
           </Link>
-          <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.1)" }} />
-          <span style={{ fontSize: 13, fontWeight: 600, color: "#ebf1ff" }}>
+          {/* Title — hidden on very small screens */}
+          <span
+            className="hidden md:inline"
+            style={{ fontSize: 12, fontWeight: 600, color: "#ebf1ff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+          >
             Карта проблем — Алматы
           </span>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Right: actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
           <Link
             href="/problems"
             style={{
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: 500,
               color: "#bcc0ca",
               textDecoration: "none",
-              padding: "6px 14px",
+              padding: "5px 10px",
               borderRadius: 8,
               border: "1px solid rgba(55,114,255,0.2)",
               background: "rgba(55,114,255,0.05)",
+              whiteSpace: "nowrap",
             }}
           >
-            Список проблем
+            Список
           </Link>
           <ReportButton
-            label="Сообщить"
+            label="+ Сообщить"
             style={{
               background: "linear-gradient(to right, #001E80, #3A50FF)",
-              padding: "7px 16px",
-              fontSize: "13px",
+              padding: "6px 12px",
+              fontSize: "12px",
+              whiteSpace: "nowrap",
             }}
           />
         </div>

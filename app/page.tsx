@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import type { LucideIcon } from "lucide-react";
-import Image from "next/image";
 import Navbar from "./components/Navbar";
 import ParticleBackground from "./components/ParticleBackground";
 import ReportButton from "./components/ReportButton";
 import FeedSection from "./components/FeedSection";
+import Footer from "./components/Footer";
 import {
   MapPin,
   Zap,
@@ -435,33 +435,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ━━━ FOOTER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <footer
-        className="px-6 sm:px-10 py-10"
-        style={{ borderTop: "1px solid rgba(40,51,83,0.8)", backgroundColor: "#0e121d" }}
-      >
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <a href="#" className="flex items-center" style={{ textDecoration: "none" }}>
-            <Image
-              src="/images/logo.png"
-              alt="CityVoice"
-              width={140}
-              height={42}
-              style={{ height: "36px", width: "auto" }}
-            />
-          </a>
-
-          <div className="flex items-center gap-6 text-sm" style={{ color: "#bcc0ca" }}>
-            <a href="#" className="hover:text-white transition-colors" style={{ textDecoration: "none" }}>Алматы</a>
-            <a href="#" className="hover:text-white transition-colors" style={{ textDecoration: "none" }}>Астана</a>
-            <a href="#" className="hover:text-white transition-colors" style={{ textDecoration: "none" }}>Ташкент</a>
-          </div>
-
-          <p className="text-sm" style={{ color: "#bcc0ca" }}>
-            © 2025 CityVoice. Голос города.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

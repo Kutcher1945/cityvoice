@@ -51,6 +51,7 @@ interface Props {
 export default function ReportButton({ label = "Сообщить о проблеме", className, style }: Props) {
   const [open, setOpen]           = useState(false);
   const [step, setStep]           = useState<Step>("form");
+  const [createdId, setCreatedId] = useState<number | null>(null);
   const [category, setCategory]   = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [photo, setPhoto]         = useState<string | null>(null);
@@ -186,8 +187,8 @@ export default function ReportButton({ label = "Сообщить о пробле
         fd.append("photo", new Blob([arr], { type: mime }), "photo.jpg");
       }
 
-      await createReport(fd);
-
+      const res = await createReport(fd);
+      setCreatedId(res.data.id);
       setStep("success");
     } catch {
       setSubmitError("Не удалось отправить. Попробуйте ещё раз.");
@@ -210,6 +211,7 @@ export default function ReportButton({ label = "Сообщить о пробле
       setLocating(false);
       setLocateError(null);
       setSubmitError(null);
+      setCreatedId(null);
     }, 300);
   };
 
@@ -576,51 +578,75 @@ export default function ReportButton({ label = "Сообщить о пробле
                     <p className="text-sm" style={{ color: "#4ade80" }}>Теперь её видят все жители города</p>
                   </div>
 
-                  {/* Stats */}
+                  {/* Share CTA */}
                   <div
-                    className="w-full rounded-xl px-5 py-4 flex items-center justify-around"
+                    className="w-full rounded-xl px-5 py-4"
                     style={{ background: "rgba(14,18,29,0.6)", border: "1px solid rgba(55,114,255,0.12)" }}
                   >
-                    {[
-                      { n: "1 201", label: "Проблем на карте" },
-                      { n: "0",     label: "Поддержали" },
-                      { n: "Новая", label: "Статус" },
-                    ].map((s) => (
-                      <div key={s.label} className="flex flex-col items-center gap-0.5">
-                        <span className="text-lg font-bold text-white">{s.n}</span>
-                        <span className="text-xs" style={{ color: "#bcc0ca" }}>{s.label}</span>
-                      </div>
-                    ))}
+                    <p className="text-sm font-semibold text-white mb-1">
+                      Поделитесь — ускорьте решение
+                    </p>
+                    <p className="text-xs" style={{ color: "#bcc0ca" }}>
+                      Чем больше жителей поддержат проблему, тем сложнее её игнорировать
+                    </p>
                   </div>
 
-                  <p className="text-sm leading-relaxed" style={{ color: "#bcc0ca" }}>
-                    Поделитесь проблемой — чем больше жителей поддержат,
-                    тем быстрее город отреагирует.
-                  </p>
-
-                  <div className="flex gap-3 w-full">
-                    <button
-                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white"
-                      style={{ background: "linear-gradient(to right, #001E80, #3A50FF)" }}
-                      onClick={handleClose}
-                    >
-                      <Share2 size={16} />
-                      Поделиться
-                    </button>
+                  {/* Share buttons */}
+                  <div className="flex flex-col gap-2.5 w-full">
+                    {/* Telegram */}
                     <a
-                      href="/map"
-                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
-                      style={{
-                        background: "rgba(14,18,29,0.6)",
-                        border: "1px solid rgba(55,114,255,0.2)",
-                        color: "#bcc0ca",
-                        textDecoration: "none",
-                      }}
-                      onClick={handleClose}
+                      href={`https://t.me/share/url?url=${encodeURIComponent(
+                        createdId
+                          ? `https://city.smartalmaty.com/report/${createdId}`
+                          : "https://city.smartalmaty.com"
+                      )}&text=${encodeURIComponent(
+                        `Проблема в Алматы: ${description.trim() || "смотрите на CityVoice"}`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2.5 py-3 rounded-xl text-sm font-bold text-white"
+                      style={{ background: "linear-gradient(to right, #0088cc, #229ed9)", textDecoration: "none" }}
                     >
-                      <Map size={16} />
-                      На карту
+                      {/* Telegram icon */}
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.09l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.268.47z"/>
+                      </svg>
+                      Поделиться в Telegram
                     </a>
+
+                    <div className="flex gap-2.5">
+                      <button
+                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold"
+                        style={{
+                          background: "rgba(55,114,255,0.12)",
+                          border: "1px solid rgba(55,114,255,0.25)",
+                          color: "#3772ff",
+                        }}
+                        onClick={() => {
+                          const url = createdId
+                            ? `https://city.smartalmaty.com/report/${createdId}`
+                            : "https://city.smartalmaty.com";
+                          navigator.clipboard?.writeText(url);
+                        }}
+                      >
+                        <Share2 size={14} />
+                        Скопировать ссылку
+                      </button>
+                      <a
+                        href="/map"
+                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
+                        style={{
+                          background: "rgba(14,18,29,0.6)",
+                          border: "1px solid rgba(55,114,255,0.15)",
+                          color: "#bcc0ca",
+                          textDecoration: "none",
+                        }}
+                        onClick={handleClose}
+                      >
+                        <Map size={14} />
+                        На карту
+                      </a>
+                    </div>
                   </div>
                 </div>
               )}

@@ -165,25 +165,42 @@ export default function MapView() {
       <div
         style={{
           position: "absolute",
-          top: 12,
-          left: "50%",
-          transform: "translateX(-50%)",
+          top: 8,
+          left: 0,
+          right: 0,
+          width: "100%",
           zIndex: 1000,
           display: "flex",
           flexDirection: "column",
-          gap: 8,
-          alignItems: "center",
+          gap: 6,
           pointerEvents: "none",
+          overflow: "hidden",
         }}
       >
-        {/* Category row */}
+        {/* Category row — horizontally scrollable */}
+        <div style={{ position: "relative", width: "100%", pointerEvents: "all" }}>
+          {/* Fade + chevron */}
+          <div style={{
+            position: "absolute", right: 0, top: 0, bottom: 0, width: 44, zIndex: 1,
+            background: "linear-gradient(to left, rgba(10,14,24,0.98) 30%, transparent)",
+            pointerEvents: "none",
+            display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 6,
+          }}>
+            <span style={{ fontSize: 16, color: "rgba(55,114,255,0.8)", lineHeight: 1 }}>›</span>
+          </div>
         <div
           style={{
+            width: "100%",
+            overflowX: "auto",
+            overflowY: "visible",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
             display: "flex",
             gap: 6,
-            flexWrap: "wrap",
-            justifyContent: "center",
+            padding: "4px 40px 4px 12px",
             pointerEvents: "all",
+            boxSizing: "border-box",
           }}
         >
           {CATEGORY_FILTERS.map(({ key, label }) => {
@@ -194,6 +211,7 @@ export default function MapView() {
                 key={key}
                 onClick={() => setCategory(key)}
                 style={{
+                  flexShrink: 0,
                   padding: "5px 12px",
                   borderRadius: 20,
                   fontSize: 12,
@@ -204,6 +222,7 @@ export default function MapView() {
                   color: active ? color : "#bcc0ca",
                   backdropFilter: "blur(8px)",
                   transition: "all 0.15s",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {label}
@@ -211,9 +230,34 @@ export default function MapView() {
             );
           })}
         </div>
+        </div>
 
-        {/* Status row */}
-        <div style={{ display: "flex", gap: 6, pointerEvents: "all" }}>
+        {/* Status row — horizontally scrollable */}
+        <div style={{ position: "relative", width: "100%", pointerEvents: "all" }}>
+          {/* Fade + chevron */}
+          <div style={{
+            position: "absolute", right: 0, top: 0, bottom: 0, width: 44, zIndex: 1,
+            background: "linear-gradient(to left, rgba(10,14,24,0.98) 30%, transparent)",
+            pointerEvents: "none",
+            display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 6,
+          }}>
+            <span style={{ fontSize: 14, color: "rgba(55,114,255,0.8)", lineHeight: 1 }}>›</span>
+          </div>
+        <div
+          style={{
+            width: "100%",
+            overflowX: "auto",
+            overflowY: "visible",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            display: "flex",
+            gap: 6,
+            padding: "0 36px 4px 12px",
+            pointerEvents: "all",
+            boxSizing: "border-box",
+          }}
+        >
           {STATUS_FILTERS.map(({ key, label }) => {
             const active = status === key;
             const color  = key === "all" ? "#3772ff" : STATUS_COLOR[key];
@@ -222,6 +266,7 @@ export default function MapView() {
                 key={key}
                 onClick={() => setStatus(key)}
                 style={{
+                  flexShrink: 0,
                   padding: "4px 10px",
                   borderRadius: 20,
                   fontSize: 11,
@@ -232,12 +277,14 @@ export default function MapView() {
                   color: active ? color : "#8892a4",
                   backdropFilter: "blur(8px)",
                   transition: "all 0.15s",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {label}
               </button>
             );
           })}
+        </div>
         </div>
       </div>
 
@@ -287,9 +334,10 @@ export default function MapView() {
             >
               <Popup
                 minWidth={300}
-                maxWidth={340}
+                maxWidth={300}
               >
                 <div style={{
+                  width: 300,
                   background: "#1a2240",
                   borderRadius: 14,
                   overflow: "hidden",
@@ -359,7 +407,7 @@ export default function MapView() {
                     </p>
 
                     {/* Address + days */}
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, minWidth: 0 }}>
                       {r.address && (
                         <span style={{ fontSize: 12, color: "#8892a4", display: "flex", gap: 4, alignItems: "center", flex: 1, overflow: "hidden" }}>
                           <MapPin size={11} />

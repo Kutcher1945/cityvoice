@@ -199,3 +199,6 @@ body {
 .leaflet-popup-content { margin: 0 !important; width: auto !important; }
 .leaflet-popup-tip-container { display: none; }
 .leaflet-container { font-family: var(--font-geist-sans, Arial, sans-serif); }
+
+/* Hide scrollbars on filter rows but keep scroll functionality */
+.map-filter-row::-webkit-scrollbar { display: none; }
