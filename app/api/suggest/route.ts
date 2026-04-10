@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
   url.searchParams.set("lang", "ru_RU");
   url.searchParams.set("results", "5");
   url.searchParams.set("bbox", "76.6,43.0,77.2,43.5"); // Almaty bbox
+  url.searchParams.set("add_coords", "true"); // ask Yandex to include point coords
 
   const res = await fetch(url.toString());
   const data = await res.json();

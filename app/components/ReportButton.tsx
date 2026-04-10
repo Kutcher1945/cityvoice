@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { createReport } from "@/src/services/cityvoiceService";
 import {
   X,
   Plus,
@@ -20,6 +21,15 @@ import {
   LocateFixed,
   Loader2,
 } from "lucide-react";
+
+const CATEGORY_MAP: Record<string, string> = {
+  "Дороги":    "roads",
+  "Мусор":     "trash",
+  "Освещение": "lighting",
+  "Транспорт": "transport",
+  "Парки":     "parks",
+  "Другое":    "other",
+};
 
 const CATEGORIES = [
   { label: "Дороги",     Icon: Construction },
@@ -47,7 +57,8 @@ export default function ReportButton({ label = "Сообщить о пробле
   const [dragging, setDragging]   = useState(false);
   const [customCategory, setCustomCategory] = useState("");
   const [address, setAddress]               = useState("");
-  const [suggestions, setSuggestions]       = useState<string[]>([]);
+  const [coords, setCoords]                 = useState<{ lat: number; lon: number } | null>(null);
+  const [suggestions, setSuggestions]       = useState<{ label: string; lat?: number; lon?: number }[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const [locating, setLocating]             = useState(false);
@@ -68,10 +79,18 @@ export default function ReportButton({ label = "Сообщить о пробле
       try {
         const res = await fetch(`/api/suggest?q=${encodeURIComponent(query)}`);
         const data = await res.json();
-        const items: string[] = (data.results ?? []).map((r: { title?: { text?: string }; subtitle?: { text?: string } }) => {
+        const items = (data.results ?? []).map((r: {
+          title?: { text?: string };
+          subtitle?: { text?: string };
+          point?: { lat?: number; lon?: number };
+        }) => {
           const title    = r.title?.text ?? "";
           const subtitle = r.subtitle?.text ?? "";
-          return subtitle ? `${title}, ${subtitle}` : title;
+          return {
+            label: subtitle ? `${title}, ${subtitle}` : title,
+            lat:   r.point?.lat,
+            lon:   r.point?.lon,
+          };
         });
         setSuggestions(items);
         setShowSuggestions(true);
@@ -98,6 +117,7 @@ export default function ReportButton({ label = "Сообщить о пробле
             const kz = /казахстан|алматы|астана|шымкент|алма-ата/i;
             if (kz.test(data.address)) {
               setAddress(data.address);
+              setCoords({ lat: coords.latitude, lon: coords.longitude });
             } else {
               setLocateError("Не удалось определить адрес. Введите вручную.");
             }
@@ -132,10 +152,48 @@ export default function ReportButton({ label = "Сообщить о пробле
     if (file) handleFile(file);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!category || !description.trim()) return;
-    setStep("success");
+
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const fd = new FormData();
+      fd.append("category", CATEGORY_MAP[category] ?? "other");
+      if (category === "Другое" && customCategory.trim()) {
+        fd.append("custom_category", customCategory.trim());
+      }
+      fd.append("description", description.trim());
+      fd.append("address", address.trim());
+      fd.append("city", "almaty");
+      if (coords) {
+        fd.append("lat", String(coords.lat));
+        fd.append("lon", String(coords.lon));
+      }
+
+      // Convert base64 photo to Blob without fetch() (avoids CSP connect-src)
+      if (photo) {
+        const [header, b64] = photo.split(",");
+        const mime = header.match(/:(.*?);/)?.[1] ?? "image/jpeg";
+        const bytes = atob(b64);
+        const arr = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        fd.append("photo", new Blob([arr], { type: mime }), "photo.jpg");
+      }
+
+      await createReport(fd);
+
+      setStep("success");
+    } catch {
+      setSubmitError("Не удалось отправить. Попробуйте ещё раз.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleClose = () => {
@@ -147,9 +205,11 @@ export default function ReportButton({ label = "Сообщить о пробле
       setPhoto(null);
       setCustomCategory("");
       setAddress("");
+      setCoords(null);
       setSuggestions([]);
       setLocating(false);
       setLocateError(null);
+      setSubmitError(null);
     }, 300);
   };
 
@@ -378,8 +438,13 @@ export default function ReportButton({ label = "Сообщить о пробле
                   <div className="relative z-20">
                     <div className="flex items-center justify-between mb-2">
                       <label className="text-sm font-semibold flex items-center gap-1.5" style={{ color: "#dfe0e5" }}>
-                        <MapPin size={14} color="#3772ff" />
+                        <MapPin size={14} color={coords ? "#4ade80" : "#3772ff"} />
                         Адрес
+                        {coords && (
+                          <span className="text-xs font-normal" style={{ color: "#4ade80" }}>
+                            · координаты получены
+                          </span>
+                        )}
                       </label>
                       <button
                         type="button"
@@ -408,6 +473,7 @@ export default function ReportButton({ label = "Сообщить о пробле
                         value={address}
                         onChange={(e) => {
                           setAddress(e.target.value);
+                          setCoords(null);
                           fetchSuggestions(e.target.value);
                           if (locateError) setLocateError(null);
                         }}
@@ -434,7 +500,7 @@ export default function ReportButton({ label = "Сообщить о пробле
                             style={{ borderColor: "rgba(55,114,255,0.6)", borderTopColor: "transparent" }}
                           />
                         ) : address ? (
-                          <button type="button" onClick={() => { setAddress(""); setSuggestions([]); }}>
+                          <button type="button" onClick={() => { setAddress(""); setCoords(null); setSuggestions([]); }}>
                             <X size={14} color="#bcc0ca" />
                           </button>
                         ) : null}
@@ -448,7 +514,7 @@ export default function ReportButton({ label = "Сообщить о пробле
                   </div>
 
                   {/* ── Validation hint ── */}
-                  {!canSubmit && (
+                  {!canSubmit && !submitError && (
                     <p className="text-xs text-center" style={{ color: "#bcc0ca" }}>
                       {!category && !description.trim()
                         ? "Выберите категорию и добавьте описание"
@@ -458,21 +524,36 @@ export default function ReportButton({ label = "Сообщить о пробле
                     </p>
                   )}
 
+                  {submitError && (
+                    <p className="text-xs text-center" style={{ color: "#f87171" }}>
+                      {submitError}
+                    </p>
+                  )}
+
                   {/* ── Submit ── */}
                   <button
                     type="submit"
-                    disabled={!canSubmit}
+                    disabled={!canSubmit || submitting}
                     className="submit-btn flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-white"
                     style={{
-                      background: canSubmit
+                      background: canSubmit && !submitting
                         ? "linear-gradient(to right, #001E80, #3A50FF)"
                         : "rgba(55,114,255,0.2)",
-                      cursor: canSubmit ? "pointer" : "not-allowed",
-                      opacity: canSubmit ? 1 : 0.6,
+                      cursor: canSubmit && !submitting ? "pointer" : "not-allowed",
+                      opacity: canSubmit && !submitting ? 1 : 0.6,
                     }}
                   >
-                    Опубликовать проблему
-                    <ArrowRight size={18} />
+                    {submitting ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Отправляю...
+                      </>
+                    ) : (
+                      <>
+                        Опубликовать проблему
+                        <ArrowRight size={18} />
+                      </>
+                    )}
                   </button>
                 </form>
               ) : (
@@ -526,18 +607,20 @@ export default function ReportButton({ label = "Сообщить о пробле
                       <Share2 size={16} />
                       Поделиться
                     </button>
-                    <button
+                    <a
+                      href="/map"
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
                       style={{
                         background: "rgba(14,18,29,0.6)",
                         border: "1px solid rgba(55,114,255,0.2)",
                         color: "#bcc0ca",
+                        textDecoration: "none",
                       }}
                       onClick={handleClose}
                     >
                       <Map size={16} />
                       На карту
-                    </button>
+                    </a>
                   </div>
                 </div>
               )}
@@ -552,10 +635,24 @@ export default function ReportButton({ label = "Сообщить о пробле
         <SuggestDropdown
           inputRef={addressRef}
           suggestions={suggestions}
-          onSelect={(s) => {
-            setAddress(s);
+          onSelect={async (s) => {
+            setAddress(s.label);
             setSuggestions([]);
             setShowSuggestions(false);
+            if (s.lat !== undefined && s.lon !== undefined) {
+              setCoords({ lat: s.lat, lon: s.lon });
+            } else {
+              // Suggest didn't return coords — forward-geocode the address
+              try {
+                const res = await fetch(`/api/geocode?q=${encodeURIComponent(s.label)}`);
+                const data = await res.json();
+                if (data.lat !== null && data.lon !== null) {
+                  setCoords({ lat: data.lat, lon: data.lon });
+                }
+              } catch {
+                // coords stay null — not critical
+              }
+            }
           }}
         />,
         document.body
@@ -564,6 +661,8 @@ export default function ReportButton({ label = "Сообщить о пробле
   );
 }
 
+type Suggestion = { label: string; lat?: number; lon?: number };
+
 /* ── Dropdown rendered separately so it can recalculate rect on every paint ── */
 function SuggestDropdown({
   inputRef,
@@ -571,8 +670,8 @@ function SuggestDropdown({
   onSelect,
 }: {
   inputRef: React.RefObject<HTMLInputElement | null>;
-  suggestions: string[];
-  onSelect: (s: string) => void;
+  suggestions: Suggestion[];
+  onSelect: (s: Suggestion) => void;
 }) {
   const rect = inputRef.current?.getBoundingClientRect();
   if (!rect) return null;
@@ -614,8 +713,8 @@ function SuggestDropdown({
           onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
           onClick={() => onSelect(s)}
         >
-          <MapPin size={13} color="#3772ff" className="flex-shrink-0" />
-          {s}
+          <MapPin size={13} color={s.lat ? "#4ade80" : "#3772ff"} className="flex-shrink-0" />
+          {s.label}
         </button>
       ))}
     </div>

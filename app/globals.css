@@ -186,3 +186,16 @@ body {
 ::-webkit-scrollbar-track { background: #0e121d; }
 ::-webkit-scrollbar-thumb { background: #283353; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #3772ff; }
+
+/* ── Leaflet dark theme ─────────────────────── */
+.leaflet-popup-content-wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+.leaflet-popup-content { margin: 0 !important; width: auto !important; }
+.leaflet-popup-tip-container { display: none; }
+.leaflet-container { font-family: var(--font-geist-sans, Arial, sans-serif); }

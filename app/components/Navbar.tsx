@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import ReportButton from "./ReportButton";
 
@@ -56,7 +57,7 @@ export default function Navbar() {
           />
         </a>
 
-        {/* Nav links — pill style like zhancareai */}
+        {/* Nav links */}
         <nav className="hidden md:flex items-center gap-2 text-sm text-white">
           {[
             { label: "Возможности", id: "features" },
@@ -73,6 +74,14 @@ export default function Navbar() {
               <div className="absolute inset-0 bg-white rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-200" />
             </button>
           ))}
+          <Link
+            href="/problems"
+            className="group relative px-4 py-1.5 rounded-full border transition-all duration-200 text-white hover:text-[#0e121d] focus:outline-none"
+            style={{ borderColor: "rgba(55,114,255,0.6)", background: "rgba(55,114,255,0.1)" }}
+          >
+            <span className="relative z-10">Проблемы</span>
+            <div className="absolute inset-0 bg-white rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-200" />
+          </Link>
         </nav>
 
         {/* Actions */}

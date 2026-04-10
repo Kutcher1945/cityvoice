@@ -4,46 +4,30 @@ import Image from "next/image";
 import Navbar from "./components/Navbar";
 import ParticleBackground from "./components/ParticleBackground";
 import ReportButton from "./components/ReportButton";
+import FeedSection from "./components/FeedSection";
 import {
   MapPin,
   Zap,
   ThumbsUp,
   BarChart3,
-  Construction,
-  Trash2,
-  Lightbulb,
   Lock,
   Frown,
   MessageSquareOff,
   Map,
   ArrowRight,
-  Share2,
-  Clock,
   Timer,
   TrendingUp,
   Megaphone,
-  Flame,
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "CityVoice — Голос города",
+  title: "CityVoice — Голос города | Сообщить о проблеме в Алматы",
   description:
-    "Платформа, где проблемы города становятся публичными и начинают решаться.",
+    "CityVoice — сообщайте о ямах на дорогах, мусоре, сломанных фонарях и других проблемах Алматы. Проблемы становятся публичными и решаются быстрее.",
+  alternates: { canonical: "https://city.smartalmaty.com" },
 };
 
 /* ── Types ────────────────────────────────────────────────────────── */
-
-type Problem = {
-  id: number;
-  title: string;
-  category: string;
-  days: number;
-  votes: number;
-  status: "new" | "progress" | "done";
-  statusLabel: string;
-  Icon: LucideIcon;
-  district: string;
-};
 
 type Feature = {
   Icon: LucideIcon;
@@ -70,42 +54,6 @@ type Highlight = {
 };
 
 /* ── Data ─────────────────────────────────────────────────────────── */
-
-const problems: Problem[] = [
-  {
-    id: 1,
-    title: "Яма на пересечении Абая / Достык",
-    category: "Дороги",
-    days: 17,
-    votes: 124,
-    status: "progress",
-    statusLabel: "В работе",
-    Icon: Construction,
-    district: "Медеуский р-н",
-  },
-  {
-    id: 2,
-    title: "Мусор у подъезда ул. Тимирязева 42",
-    category: "Мусор",
-    days: 5,
-    votes: 38,
-    status: "new",
-    statusLabel: "Новая",
-    Icon: Trash2,
-    district: "Алмалинский р-н",
-  },
-  {
-    id: 3,
-    title: "Фонарь не работает 3 месяца",
-    category: "Освещение",
-    days: 92,
-    votes: 201,
-    status: "progress",
-    statusLabel: "В работе",
-    Icon: Lightbulb,
-    district: "Бостандыкский р-н",
-  },
-];
 
 const features: Feature[] = [
   {
@@ -186,20 +134,6 @@ const highlights: Highlight[] = [
 
 /* ── Helpers ──────────────────────────────────────────────────────── */
 
-function StatusBadge({ status, label }: { status: string; label: string }) {
-  const cls =
-    status === "new"
-      ? "badge-new"
-      : status === "progress"
-      ? "badge-progress"
-      : "badge-done";
-  return (
-    <span className={`${cls} text-xs font-semibold px-2.5 py-1 rounded-full`}>
-      {label}
-    </span>
-  );
-}
-
 /* ── Page ─────────────────────────────────────────────────────────── */
 
 export default function Home() {
@@ -267,7 +201,7 @@ export default function Home() {
 
           <div className="animate-fade-up delay-300 flex flex-col sm:flex-row gap-4 justify-center">
             <ReportButton label="Сообщить о проблеме" />
-            <a href="#feed" className="btn-ghost text-base">
+            <a href="/map" className="btn-ghost text-base">
               Смотреть карту
               <Map size={18} />
             </a>
@@ -436,120 +370,7 @@ export default function Home() {
       </section>
 
       {/* ━━━ FEED PREVIEW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section
-        id="feed"
-        className="px-6 sm:px-10 py-24"
-        style={{ backgroundColor: "#0e121d" }}
-      >
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-12 flex-wrap gap-4">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: "#3772ff" }}>
-                Лента
-              </p>
-              <h2 className="flex items-center gap-3 text-3xl sm:text-4xl font-bold">
-                <Flame size={32} color="#f87171" />
-                Горячие проблемы
-              </h2>
-            </div>
-
-            <div
-              className="flex items-center gap-1 rounded-xl p-1 text-sm font-medium"
-              style={{ background: "rgba(40,51,83,0.5)", border: "1px solid rgba(55,114,255,0.12)" }}
-            >
-              {["Все", "Популярные", "Долго"].map((tab, i) => (
-                <span
-                  key={tab}
-                  className="px-4 py-2 rounded-lg cursor-pointer"
-                  style={i === 1 ? { background: "#3772ff", color: "#fff" } : { color: "#bcc0ca" }}
-                >
-                  {tab}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {problems.map((p) => (
-              <div
-                key={p.id}
-                className="card-hover rounded-2xl overflow-hidden"
-                style={{
-                  background: "linear-gradient(135deg, rgba(40,51,83,0.6), rgba(30,38,62,0.6))",
-                  border: "1px solid rgba(55,114,255,0.12)",
-                }}
-              >
-                {/* Card thumbnail */}
-                <div
-                  className="flex items-center justify-center"
-                  style={{ height: 140, background: "rgba(14,18,29,0.6)" }}
-                >
-                  <p.Icon size={52} color="#3772ff" strokeWidth={1.25} />
-                </div>
-
-                <div className="p-5 flex flex-col gap-3">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span
-                      className="text-xs font-medium px-2.5 py-1 rounded-full"
-                      style={{
-                        background: "rgba(55,114,255,0.12)",
-                        color: "#ebf1ff",
-                        border: "1px solid rgba(55,114,255,0.2)",
-                      }}
-                    >
-                      {p.category}
-                    </span>
-                    <StatusBadge status={p.status} label={p.statusLabel} />
-                  </div>
-
-                  <h3 className="text-base font-semibold leading-snug text-white">{p.title}</h3>
-
-                  <div className="flex items-center gap-4 text-xs" style={{ color: "#bcc0ca" }}>
-                    <span className="flex items-center gap-1">
-                      <MapPin size={12} />
-                      {p.district}
-                    </span>
-                    <span
-                      className="flex items-center gap-1 font-semibold"
-                      style={{ color: p.days > 30 ? "#f87171" : "#fbbf24" }}
-                    >
-                      <Clock size={12} />
-                      {p.days} дн.
-                    </span>
-                  </div>
-
-                  <div
-                    className="flex items-center justify-between pt-3"
-                    style={{ borderTop: "1px solid rgba(55,114,255,0.1)" }}
-                  >
-                    <button
-                      className="flex items-center gap-1.5 text-sm font-medium"
-                      style={{ color: "#3772ff", background: "none", border: "none", cursor: "pointer" }}
-                    >
-                      <ThumbsUp size={14} />
-                      {p.votes} поддержали
-                    </button>
-                    <button
-                      className="flex items-center gap-1.5 text-sm"
-                      style={{ color: "#bcc0ca", background: "none", border: "none", cursor: "pointer" }}
-                    >
-                      <Share2 size={14} />
-                      Поделиться
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-center mt-12">
-            <a href="#" className="btn-ghost">
-              Смотреть все проблемы на карте
-              <Map size={18} />
-            </a>
-          </div>
-        </div>
-      </section>
+      <FeedSection />
 
       {/* ━━━ UX HIGHLIGHTS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
@@ -606,7 +427,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <ReportButton label="Сообщить о проблеме" />
-            <a href="#" className="btn-ghost text-base">
+            <a href="/map" className="btn-ghost text-base">
               Смотреть карту
               <Map size={18} />
             </a>
