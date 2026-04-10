@@ -1,14 +1,25 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { CheckCircle, Map, List, Share2 } from "lucide-react";
-
-export const metadata: Metadata = {
-  title: "Проблема опубликована — CityVoice",
-  robots: { index: false }, // not indexed, conversion page only
-};
+import { useSearchParams } from "next/navigation";
 
 export default function SuccessPage() {
+  const params = useSearchParams();
+  const id = params.get("id");
+  const url = id
+    ? `https://city.smartalmaty.com/report/${id}`
+    : "https://city.smartalmaty.com";
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      await navigator.share({ title: "CityVoice", text: "Проблема в нашем городе", url }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(url);
+    }
+  };
+
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4"
@@ -49,18 +60,14 @@ export default function SuccessPage() {
         </p>
 
         <div className="flex flex-col gap-3 w-full">
-          <a
-            href="https://t.me/share/url?url=https%3A%2F%2Fcity.smartalmaty.com&text=%D0%9F%D0%BE%D1%81%D0%BC%D0%BE%D1%82%D1%80%D0%B8%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BB%D0%B5%D0%BC%D1%8B%20%D0%BD%D0%B0%D1%88%D0%B5%D0%B3%D0%BE%20%D0%B3%D0%BE%D1%80%D0%BE%D0%B4%D0%B0"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={handleShare}
             className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white"
-            style={{ background: "linear-gradient(to right, #0088cc, #229ed9)", textDecoration: "none" }}
+            style={{ background: "linear-gradient(to right, #001E80, #3A50FF)" }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.09l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.268.47z"/>
-            </svg>
-            Поделиться в Telegram
-          </a>
+            <Share2 size={16} />
+            Поделиться
+          </button>
 
           <div className="flex gap-3">
             <Link href="/map"

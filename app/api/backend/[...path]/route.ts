@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import axios from "axios";
 
+// Raise Next.js body size limit for photo uploads (default is 1MB)
+export const maxDuration = 30;
+export const dynamic = "force-dynamic";
+
 const BACKEND_URL =
   process.env.BACKEND_API_URL ||
   (process.env.NODE_ENV === "production"

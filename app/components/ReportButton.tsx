@@ -141,9 +141,24 @@ export default function ReportButton({ label = "Сообщить о пробле
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = (e) => setPhoto(e.target?.result as string);
-    reader.readAsDataURL(file);
+    const img = new window.Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 1280;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+        else                { width  = Math.round(width  * MAX / height); height = MAX; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width  = width;
+      canvas.height = height;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+      // JPEG quality 0.82 keeps good quality under ~400KB
+      setPhoto(canvas.toDataURL("image/jpeg", 0.82));
+    };
+    img.src = url;
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -594,61 +609,39 @@ export default function ReportButton({ label = "Сообщить о пробле
                   </div>
 
                   {/* Share buttons */}
-                  <div className="flex flex-col gap-2.5 w-full">
-                    {/* Telegram */}
-                    <a
-                      href={`https://t.me/share/url?url=${encodeURIComponent(
-                        createdId
+                  <div className="flex gap-2.5 w-full">
+                    <button
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white"
+                      style={{ background: "linear-gradient(to right, #001E80, #3A50FF)" }}
+                      onClick={async () => {
+                        const url = createdId
                           ? `https://city.smartalmaty.com/report/${createdId}`
-                          : "https://city.smartalmaty.com"
-                      )}&text=${encodeURIComponent(
-                        `Проблема в Алматы: ${description.trim() || "смотрите на CityVoice"}`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2.5 py-3 rounded-xl text-sm font-bold text-white"
-                      style={{ background: "linear-gradient(to right, #0088cc, #229ed9)", textDecoration: "none" }}
-                    >
-                      {/* Telegram icon */}
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.09l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.268.47z"/>
-                      </svg>
-                      Поделиться в Telegram
-                    </a>
-
-                    <div className="flex gap-2.5">
-                      <button
-                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold"
-                        style={{
-                          background: "rgba(55,114,255,0.12)",
-                          border: "1px solid rgba(55,114,255,0.25)",
-                          color: "#3772ff",
-                        }}
-                        onClick={() => {
-                          const url = createdId
-                            ? `https://city.smartalmaty.com/report/${createdId}`
-                            : "https://city.smartalmaty.com";
+                          : "https://city.smartalmaty.com";
+                        const text = `Проблема в Алматы: ${description.trim() || "смотрите на CityVoice"}`;
+                        if (navigator.share) {
+                          await navigator.share({ title: "CityVoice", text, url }).catch(() => {});
+                        } else {
                           navigator.clipboard?.writeText(url);
-                        }}
-                      >
-                        <Share2 size={14} />
-                        Скопировать ссылку
-                      </button>
-                      <a
-                        href="/map"
-                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
-                        style={{
-                          background: "rgba(14,18,29,0.6)",
-                          border: "1px solid rgba(55,114,255,0.15)",
-                          color: "#bcc0ca",
-                          textDecoration: "none",
-                        }}
-                        onClick={handleClose}
-                      >
-                        <Map size={14} />
-                        На карту
-                      </a>
-                    </div>
+                        }
+                      }}
+                    >
+                      <Share2 size={15} />
+                      Поделиться
+                    </button>
+                    <a
+                      href="/map"
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
+                      style={{
+                        background: "rgba(14,18,29,0.6)",
+                        border: "1px solid rgba(55,114,255,0.15)",
+                        color: "#bcc0ca",
+                        textDecoration: "none",
+                      }}
+                      onClick={handleClose}
+                    >
+                      <Map size={14} />
+                      На карту
+                    </a>
                   </div>
                 </div>
               )}
